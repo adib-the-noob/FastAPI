@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from models import User, Gender, Role
 from uuid import uuid4, UUID
 from pydantic import BaseModel
@@ -51,6 +51,25 @@ async def delete_user(user_id: UUID):
                 'id' : user.id,
                 'message' : 'User deleted successfully'
             }
-    return {
-        'message' : 'User not found'
-    }
+    raise HTTPException(
+        status_code=404,
+        detail=f'User with id {user_id} not found'
+    )
+
+@app.put('/user/{user_id}')
+async def update_user(user_id: UUID, user: User):
+    for index, user in enumerate(db):
+        if user.id == user_id:
+            db[index].id = user_id
+            db[index].first_name = user.first_name
+            db[index].last_name = user.last_name
+            db[index].email = user.email
+            return {
+                'id' : user.id,
+                'message' : 'User updated successfully'
+            }
+
+    raise HTTPException(
+        status_code=404,
+        detail=f'User with id {user_id} not found'
+    )
