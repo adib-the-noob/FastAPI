@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from models import User, Gender, Role
-from uuid import uuid4
+from uuid import uuid4, UUID
 from pydantic import BaseModel
 from typing import Optional, List
 
@@ -26,13 +26,13 @@ db : List[User] = [
         )
 ]
 
-@app.get('/users')
-async def get_users():
-    return db
-
 @app.get("/")
 async def read_root():
     return {"Hello": "World"}
+
+@app.get('/users')
+async def get_users():
+    return db
 
 @app.post('/create-user')
 async def create_user(user: User):
@@ -40,4 +40,17 @@ async def create_user(user: User):
     return {
         'id' : user.id,
         'message' : 'User created successfully'
+    }
+
+@app.delete('/user/{user_id}')
+async def delete_user(user_id: UUID):
+    for user in db:
+        if user.id == user_id:
+            db.remove(user)
+            return {
+                'id' : user.id,
+                'message' : 'User deleted successfully'
+            }
+    return {
+        'message' : 'User not found'
     }
